@@ -24,7 +24,7 @@ for (cmap,cases) in zip(["YlGnBu"],["New"]):
       	day = Cases.get_Day(i),
       	cases = cases,
       	cmap = cmap,
-	prevdays=7,
+      	prevdays=7,
       	show_mean = True,
       	show_new = True,
       	show_CHlim = False,

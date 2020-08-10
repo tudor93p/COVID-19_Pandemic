@@ -1,4 +1,4 @@
-import PlotPyQt
+import python_libraries.PlotPyQt as PlotPyQt
 from Ro_plot import *
 
 def funfig(obj,fig,axes): 

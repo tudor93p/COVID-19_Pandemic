@@ -1,0 +1,3 @@
+[submodule "python_libraries"]
+	path = python_libraries
+	url = https://gitlab.phys.ethz.ch/pahomit/python_libraries.git
