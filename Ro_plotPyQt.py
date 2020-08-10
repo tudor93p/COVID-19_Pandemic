@@ -1,5 +1,5 @@
 import PlotPyQt
-from Ro_plot import *
+from RO_plot import *
 
 def funfig(obj,fig,axes): 
 
@@ -19,7 +19,7 @@ def funfig(obj,fig,axes):
     )
 
 
-Fig = PlotPyQt.Figure(funfig,1,2,figsize=(10,4.6))#,tight=True,**kwargs) 
+Fig = PlotPyQt.Figure(funfig,1,2,figsize=(10,4))#,tight=True,**kwargs) 
 
 
 

@@ -96,7 +96,7 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
    
   ax1.plot(ax1.get_xlim(),[0,0],c="gray",zorder=0,lw=linewidth/3)
 
-  ym12,yM12 = extend_limits(minmax(y12),0.07)
+  ym12,yM12 = extend_limits(minmax(y12[np.arange(len(y12))!=16]),0.07)
 	# y12 can be negative 
   ym12 = min(ym12,0)
 
@@ -158,8 +158,12 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
       Geo.set_geoColumn(cases,new*popfactor/prevdays,code=cc)
 
 
-    ax2.text(*Geo.get_geoCenter(code=cc)[::-1],str(cc),verticalalignment='center',horizontalalignment='center',zorder=2)
+#    ax2.scatter(*Geo.get_geoCapCoord(code=cc),c='r',s=2,zorder=2)
+    ax2.text(*Geo.get_geoCenter(code=cc),str(cc),verticalalignment='center',horizontalalignment='center',zorder=4,color="k" if cmap in ["cool","PuBuGn","YlGnBu","Spectral","coolwarm"] else "w")
 
+
+
+  ax2.scatter(*Geo.get_geoCapCoord_All().T,c='r',s=2,zorder=2)
 
   ax2.set_xticks([])
   ax2.set_yticks([])
@@ -169,16 +173,21 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
 
   vmax = np.max(Geo.get_geoColumn(cases))
 
-#  if per_capita: vmax = 0.76867179 if cases=="New" else 36.74454751
-#  else: vmax = 153.171428   if cases=="New" else 7322
+######3 valid @ 9 august
+  if per_capita:
+    vmax = 0.58 if cases=="New" else 24
+  else:
+    vmax = 110 if cases=="New" else 4900
  
 
   Geo.plot(ax=ax2,column=cases,cmap=cmap,zorder=0,legend=True,legend_kwds={'orientation':"horizontal","pad":0.05,'label':" ".join([day+":",label2]+[" (@ "+str(PopFactor)+" pop.)"]*per_capita)},vmin=0,vmax=vmax)
 
 
 
-  return [np.max(Geo.get_geoColumn(cases,code="SV",complement=C)) for C in [False,True]]
+#  return [np.max(Geo.get_geoColumn(cases,code="B",complement=C)) for C in [False,True]]
 
+
+  return [np.max(Geo.get_geoColumn(cases,code=cc)) for cc in Geo.get_CodeList(RO=False)]
 
 
 
@@ -188,7 +197,7 @@ if __name__ == '__main__':
   for (cmap,cases) in zip(["YlGnBu", "viridis"],["New","Total"]):
 
 
-    fig,axes = plt.subplots(1,2,figsize=(10,4))
+    fig,axes = plt.subplots(1,2,figsize=(10,4.6))
     
     plot(
       	axes,

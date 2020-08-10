@@ -112,7 +112,7 @@ def capitalcoord():
 
   def coord(line):
 
-    return np.array(line.strip("\n").split(" ")[1:3],dtype=float)
+    return np.array(line.strip("\n").split(" ")[1:3][::-1],dtype=float)
 
   with open(root+"CountyCapitalCoordinates.txt","r") as f:
 
@@ -154,6 +154,8 @@ def allinfo():#country=False):
 #---------------------------------------------------------------------------#
 
 
+
+
 class Counties:
 
   def __init__(self,PopFactor=1):
@@ -166,7 +168,7 @@ class Counties:
 
     self.code_to_pop = {k:v/PopFactor for (k,v) in populations().items()}
 
-    self.code_to_geocenters = capitalcoord()
+    self.code_to_capcoord = capitalcoord()
 
     self.country = geopandas.read_file(root+"gadm36_ROU.gpkg")
 
@@ -174,6 +176,9 @@ class Counties:
 
 
     self.code_to_geoindicesC = {c: self.country["NAME_1"] != self.code_to_name[c] for c in self.list_codes}
+
+    self.code_to_geocenters = {c:np.mean([list(item.centroid.coords) for item in self.country[v]["geometry"]],axis=(0,1)) for (c,v) in self.code_to_geoindices.items()}
+
 
 
   def get_CodeList(self,RO=False):
@@ -251,6 +256,23 @@ class Counties:
 
     if name is not None:
       return self.code_to_geocenters[self.get_Code(name=name)]
+
+
+
+  def get_geoCapCoord(self,code=None,name=None):
+
+    if code is not None:
+      return self.code_to_capcoord[code]
+
+    if name is not None:
+      return self.code_to_capcoord[self.get_Code(name=name)]
+
+  def get_geoCapCoord_All(self):
+
+    return np.array(list(self.code_to_capcoord.values()))
+  
+
+
 
   def set_geoColumn(self,column,value,code=None,name=None):
 
