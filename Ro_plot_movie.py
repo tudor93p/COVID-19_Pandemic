@@ -1,16 +1,48 @@
 from Ro_plot import *
 
-import os
+import os,sys
 
 
 
-for (cmap,cases) in zip(["YlGnBu"],["New"]):
-#for (cmap,cases) in zip(["viridis"],["Total"]):
-#for (cmap,cases) in zip(["YlGnBu", "viridis"],["New","Total"]):
+ 
+
+task1 = {"per_capita":True,
+	"cmap":"cool",
+	"cases":"Total",
+	"vminmax":[0,25], # vmax = (median + 2*standard dev)
+	}
+
+task2 = {"per_capita":True,
+	"cmap":"viridis",
+	"cases":"New",
+	"vminmax":[0,0.55],
+	}
+
+
+
+
+tasks = [task1,task2]
+
+if len(sys.argv)>1:
+
+  tasks = [tasks[i] for i in map(int,sys.argv[1:]) if i in range(len(tasks))]
+
+
+
+
+
+def prefix_(task):
+
+  cases = task["cases"]
+
+  return "Ro_fig/"+cases+"/"+cases
+
+
+for task in tasks:
 
   M = []
 
-  prefix = "Ro_fig/"+cases+"/"+cases
+  prefix = prefix_(task)
 
   for i in Cases.get_IndsDays()[13:]:
 
@@ -20,15 +52,13 @@ for (cmap,cases) in zip(["YlGnBu"],["New"]):
   
     P = plot(
       	axes,
-      	per_capita=True,
       	day = Cases.get_Day(i),
-      	cases = cases,
-      	cmap = cmap,
 	prevdays=7,
       	show_mean = True,
       	show_new = True,
       	show_CHlim = False,
-      	linewidth = 2.5
+      	linewidth = 4.5,
+	**task
       	)
 
     M.append(P)
@@ -39,15 +69,28 @@ for (cmap,cases) in zip(["YlGnBu"],["New"]):
   
     plt.close()
 
-    print(cases,cmap,i)
+    print(task["cases"],i)
 
-#    break
 
-#  print(cases,cmap,np.sort(np.max(M,axis=0)))
+  Data = np.max(M,axis=1)
+
+  print("min max mean std median",np.round([f(Data) for f in [np.min,np.max,np.mean,np.std,np.median]],3))
+
+
+  
+  print("max",np.round(np.max(Data),3))
+  
+  print("median + 2*sigma",np.round(np.median(Data) + 2*np.std(Data),3))
+
+  print("mean + 2*sigma",np.round(np.mean(Data) + 2*np.std(Data),3))
+
+  print("median + sigma",np.round(np.median(Data) + 1*np.std(Data),3))
+
+  print("mean + sigma",np.round(np.mean(Data) + 1*np.std(Data),3))
 
   print("\n")
 
-  cmd = "ffmpeg -y -f image2 -r 8 -pattern_type glob -i '"+prefix+"_*.png' Ro_fig/"+cases+".mp4 "
+  cmd = "ffmpeg -y -f image2 -r 8 -pattern_type glob -i '"+prefix+"_*.png' Ro_fig/"+task["cases"]+".mp4 "
 
   print(cmd)
 
