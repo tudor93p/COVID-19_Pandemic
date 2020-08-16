@@ -3,7 +3,7 @@ from scipy.signal import savgol_filter
 import matplotlib.pyplot as plt
 import Ro_datelazi,Ro_counties
 
-Cases = Ro_datelazi.RoCases("Ro_data/date_09_august_la_13_00.json")
+Cases = Ro_datelazi.RoCases("Ro_data/date_15_august_la_13_00.json")
 
 PopFactor = 100000
 
@@ -20,22 +20,23 @@ def minmax(A):
 
 
 
-def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,polyord=1,prevdays=14,per_capita=False,show_mean=True,show_CHlim=False,show_new=True,cases="Total",linewidth=2.5):
+def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,polyord=1,prevdays=14,per_capita=False,show_mean=True,show_CHlim=False,show_new=True,cases="Total",linewidth=4,vminmax=None,maxcolor=None,county_labels=True,county_capitals=False):
 
 
   ax1,ax2 = axes
 
   ax1.set_xlabel("Day index")
 
-  ax1_1 = ax1.twinx()
-  ax1_2 = ax1
+  ax1_2 = ax1.twinx()
+  ax1_1 = ax1
+
 
 
   for ax in [ax1_1,ax1_2]:
     ax.ticklabel_format(axis='y',style='sci',scilimits=(-2,2))
 
 
-  ax1.set_title(county + (" (@ "+str(PopFactor)+" pop.)")*per_capita)
+  ax1.set_title("Stats for "+county + (" (@ "+str(PopFactor)+" pop.)")*per_capita)
 
 
   countycode = Geo.get_Code(name=county)
@@ -51,7 +52,10 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
 
   y11 = y11*popfactor
 
-  ax1_1.plot(x11,y11,label="Total",c='orange',lw=linewidth)
+
+  ax1_1.plot(x11,y11,label="Total",c='darkorange',lw=linewidth*1.1)
+
+
 
 
   # -------------------------- #
@@ -63,9 +67,8 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
   y12 *= popfactor
 
   if show_new:
-    ax1_2.vlines(x12,np.zeros_like(y12),y12,linewidth=linewidth/2,label="Daily new",zorder=1)
+    ax1_2.vlines(x12,np.zeros_like(y12),y12,linewidth=linewidth/2,label="Daily new",zorder=1,alpha=0.6)
 
- 
 
   x14,y14 = Cases.Nr_NewInfected_AllDays(TimeFrame=prevdays,County=countycode)
   
@@ -82,7 +85,7 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
     label14 = label14 + " (smooth)"
 
   if show_mean:
-    ax1_2.plot(x14,y14,label=label14,c='royalblue',lw=linewidth,zorder=5)
+    ax1_2.plot(x14,y14,label=label14,c='navy',alpha=0.85,lw=linewidth,zorder=5)
 
 
   if show_CHlim:
@@ -91,16 +94,19 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
     ax1_2.plot(ax1_2.get_xlim(),np.repeat(CH_lim,2),c="r",zorder=0,lw=linewidth/2,label="Criterion CH")
 
 
+
   # ------------------- #
 
    
   ax1.plot(ax1.get_xlim(),[0,0],c="gray",zorder=0,lw=linewidth/3)
 
+
+
   ym12,yM12 = extend_limits(minmax(y12[np.arange(len(y12))!=16]),0.07)
 	# y12 can be negative 
   ym12 = min(ym12,0)
 
-  ax1.plot(np.repeat(Cases.get_iDay(day),2),[ym12,yM12],c="pink",zorder=0,lw=2*linewidth)
+  ax1_2.plot(np.repeat(Cases.get_iDay(day),2),[ym12,yM12],c="crimson",zorder=0,lw=1.5*linewidth,alpha=0.4)
 
 
 
@@ -117,9 +123,15 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
 
 
   for (i,ax) in enumerate([ax1_1,ax1_2]):
-    ax.legend(loc=2-i)
   
     ax.set_xlim(0,np.max(np.append(x11,x12))+2)
+
+
+  lines1, labels1 = ax1_1.get_legend_handles_labels()
+
+  lines2, labels2 = ax1_2.get_legend_handles_labels()
+
+  ax1_2.legend(lines1 + lines2, labels1 + labels2, loc=9)
 
 
 
@@ -158,36 +170,55 @@ def plot(axes,county="România",day=Cases.get_Day(),cmap="viridis",window=5,poly
       Geo.set_geoColumn(cases,new*popfactor/prevdays,code=cc)
 
 
-#    ax2.scatter(*Geo.get_geoCapCoord(code=cc),c='r',s=2,zorder=2)
-    ax2.text(*Geo.get_geoCenter(code=cc),str(cc),verticalalignment='center',horizontalalignment='center',zorder=4,color="k" if cmap in ["cool","PuBuGn","YlGnBu","Spectral","coolwarm"] else "w")
+    if county_labels:
+
+      if cc != "B": # there's no space for 'B'
+
+        if cc=="IF":
+#          xy = Geo.get_geoCapCoord(code=cc)
+        
+          ha,va = 'left','bottom'
+
+ 
+        else:
+          ha,va = 'center','center'
+
+        xy = Geo.get_geoCenter(code=cc)
+
+        ax2.text(*xy,str(cc),verticalalignment=va,horizontalalignment=ha,zorder=4,color="k" if cmap in ["cool","PuBuGn","YlGnBu","Spectral","coolwarm"] else "w")
+#      ax2.scatter(*Geo.get_geoCapCoord(code=cc),c='r',s=2,zorder=2)
 
 
-
-  ax2.scatter(*Geo.get_geoCapCoord_All().T,c='r',s=2,zorder=2)
+  if county_capitals:
+    ax2.scatter(*Geo.get_geoCapCoord_All().T,c='r',s=2,zorder=2)
 
   ax2.set_xticks([])
   ax2.set_yticks([])
   ax2.set_xlabel("")
   ax2.set_ylabel("")
+  
 
+  xlim,ylim = Geo.get_geoCountryBox()
 
-  vmax = np.max(Geo.get_geoColumn(cases))
+  ax2.set_xlim(xlim)
+  ax2.set_ylim(ylim)
 
-######3 valid @ 9 august
-  if per_capita:
-    vmax = 0.58 if cases=="New" else 24
+  ax2.set_axis_off()
+
+  if vminmax is None:
+    vmin = 0 
+    vmax = np.max(Geo.get_geoColumn(cases))
+
   else:
-    vmax = 110 if cases=="New" else 4900
+    vmin,vmax = vminmax
  
+  if maxcolor is not None:
+    vmax *= maxcolor 
 
-  Geo.plot(ax=ax2,column=cases,cmap=cmap,zorder=0,legend=True,legend_kwds={'orientation':"horizontal","pad":0.05,'label':" ".join([day+":",label2]+[" (@ "+str(PopFactor)+" pop.)"]*per_capita)},vmin=0,vmax=vmax)
+  Geo.plot(ax=ax2,column=cases,cmap=cmap,zorder=0,legend=True,legend_kwds={'orientation':"horizontal","pad":0.05,'label':" ".join([day+":",label2]+[" (@ "+str(PopFactor)+" pop.)"]*per_capita)},vmin=vmin,vmax=vmax)
 
+  return np.sort([np.max(Geo.get_geoColumn(cases,code=cc)) for cc in Geo.get_CodeList(RO=False) if cc not in ["B","SV"]])
 
-
-#  return [np.max(Geo.get_geoColumn(cases,code="B",complement=C)) for C in [False,True]]
-
-
-  return [np.max(Geo.get_geoColumn(cases,code=cc)) for cc in Geo.get_CodeList(RO=False)]
 
 
 
@@ -199,7 +230,7 @@ if __name__ == '__main__':
 
     fig,axes = plt.subplots(1,2,figsize=(10,4.6))
     
-    plot(
+    P = plot(
       	axes,
       	per_capita=True,
       	day = Cases.get_Day(),
@@ -210,9 +241,12 @@ if __name__ == '__main__':
       	show_CHlim = True,
       	)
 
+    print(P)
 
     fig.tight_layout()
-    
+   
+    break
+ 
   plt.show()
     
   plt.close()

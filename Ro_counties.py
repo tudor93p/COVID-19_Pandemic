@@ -296,7 +296,15 @@ class Counties:
 
     return self.country[row][column]
 
+  def get_geoCountryBox(self):
 
+    bounds = self.country.bounds
+
+    xlim = [np.min(bounds.minx),np.max(bounds.maxx)]
+    ylim = [np.min(bounds.miny),np.max(bounds.maxy)]
+  
+    return xlim,ylim 
+   
 
  
 
@@ -313,22 +321,18 @@ class Counties:
 if __name__ == '__main__':
 
 
-  for item in allinfo().items():
-  
-    for i in item[1].items():
-      print(i)
-  
-    print()
+#  for item in allinfo().items():
+#  
+#    for i in item[1].items():
+#      print(i)
+#  
+#    print()
 
 
+  Geo = Counties()
 
 
-
-
-
-
-
-
+  print(Geo.get_geoCountryBox())
 
 
 
