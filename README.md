@@ -20,10 +20,10 @@
 
 2. To test json, run  [Ro_datelazi.py](./Ro_datelazi.py)
 
-3. To test geopands, run [Ro_counties.py](./Ro_counties.py)
+3. To test geopands, run [Ro_counties.py](counties.py)
 
-4. A simple plot: [Ro_plot.py](./Ro_plot.py)
+4. A simple plot: [Ro_plot.py](plot.py)
 
-5.1. Sliders plot: [Ro_plot_sliders.py](./Ro_plot_sliders.py)
+5.1. Sliders plot: [Ro_plot_sliders.py](plot_sliders.py)
 
-5.2. Make a movie: [Ro_plot_movie.py](./Ro_plot_movie.py)
+5.2. Make a movie: [Ro_plot_movie.py](plot_movie.py)
