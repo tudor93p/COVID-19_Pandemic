@@ -3,6 +3,9 @@ import geopandas
 import string
 
 
+
+
+
 def codes(root):
   """List of county codes."""
   with open(root+"CountyCodes_ASCII.txt", "r") as f:
@@ -20,12 +23,12 @@ def names_ASCII(root):
 
     return {code(line): name(line) for line in f.readlines()}
 
+def printable(s): 
+  return "".join(list(filter(lambda x:  x in set(string.printable),  s)))
+
 def names_nonASCII(root):
 
-  def printable(s): 
-    return "".join(list(filter(lambda x:  x in set(string.printable),  s)))
-
-  good_names = list(set(geopandas.read_file(root+"gadm36_ROU.gpkg")['NAME_1']))
+  good_names = list(set(geopandas.read_file(root+"geodata.gpkg")['NAME_1']))
 
   good_names_print = [set(printable(n)) for n in good_names]
 
@@ -110,69 +113,137 @@ def allinfo(root): #country=False):
 class Counties:
   """class with all info and convenient methods. """
 
-  def __init__(self, PopFactor=1,  root="Ro_data/"):
+  def __init__(self, country_code, country_nameASCII = None, country_name = None, PopFactor = 1):
 
-    self.root = root
+
+    self.country_code = country_code
+
+
+    if country_nameASCII is not None:
+      self.country_nameASCII = country_nameASCII
+
+    else:
+      self.country_nameASCII = country_code
+         
+      if country_name is not None and country_name==printable(country_name):
+        self.country_nameASCII = country_name
+
+
+    if country_name is not None:
+      self.country_name = country_name
+    else:
+      self.country_name = self.country_nameASCII
+
+
+    self.root = country_code + "_data/"
 
     self.list_codes = list(codes(self.root))
 
     self.code_to_name = names_nonASCII(self.root)
 
-    self.name_to_code = {v: k for (k, v) in self.code_to_name.items()}
+    self.code_to_nameASCII = names_ASCII(self.root)
+
+    self.name_to_code = dict()
+
+    for ctn in [self.code_to_name,self.code_to_nameASCII]:
+
+      self.name_to_code.update({v: k for (k, v) in ctn.items()})
 
     self.code_to_pop = {k: v/PopFactor for (k, v) in populations(self.root).items()}
 
+    self.country_pop = sum(self.code_to_pop.values())
+
     self.code_to_capcoord = capitalcoord(self.root)
 
-    self.country = geopandas.read_file(root+"gadm36_ROU.gpkg")
+    self.country = geopandas.read_file(self.root+"geodata.gpkg")
 
     self.code_to_geoindices = {c:  self.country["NAME_1"] == self.code_to_name[c] for c in self.list_codes}
+
     self.code_to_geoindicesC = {c:  self.country["NAME_1"] != self.code_to_name[c] for c in self.list_codes}
+				# 'C' at the end stands for complementary set
+
     self.code_to_geocenters = {c: np.mean([list(item.centroid.coords) for item in self.country[v]["geometry"]], axis=(0, 1)) for (c, v) in self.code_to_geoindices.items()}
 
-  def get_CodeList(self, RO=False): 
 
-    return ["RO"]*RO + self.list_codes 
 
-  def dict_CodeToName(self, RO=False): 
+  def get_CountryName(self,ASCII=False):
 
-    if RO: 
-      return {**self.code_to_name, **{"RO": "România"}}
+    return self.country_nameASCII if ASCII else self.country_name
 
-    return self.code_to_name
 
-  def dict_NameToCode(self, RO=False): 
+  def dict_CountryCodeToName(self, ASCII=False):
 
-    if RO: 
-      return {**self.name_to_code, **{"România": "RO"}}
+    name = self.country_nameASCII if ASCII else self.country_name
 
-    return self.name_to_code
+    return {self.country_code: self.get_CountryName(ASCII=ASCII)}
 
-  def dict_CodeToPop(self, RO=False): 
 
-    if RO: 
-      return {**self.code_to_pop, **{"RO": sum(self.code_to_pop.values())}}
 
+  def dict_CountryNameToCode(self):
+
+    out = {self.get_CountryName(ASCII=False):self.country_code}
+ 
+    out.update({self.get_CountryName(ASCII=True):self.country_code})
+
+    return out
+
+  
+  
+  def get_CodeList(self, include_country=False): 
+
+    return [self.country_code]*include_country + self.list_codes 
+
+  def dict_CodeToName(self, include_country=False, ASCII=False): 
+
+    only_counties = self.code_to_nameASCII if ASCII else self.code_to_name
+
+    if not include_country:
+      return only_counties
+
+    return {**only_counties, **dict_CountryCodeToName(ASCII=ASCII)}
+
+
+  def dict_NameToCode(self, include_country=False): 
+
+    if not include_country:
+      return self.name_to_code
+
+    return {**self.name_to_code, **self.dict_CountryNameToCode()}
+
+
+  def dict_CodeToPop(self, include_country=False): 
+
+    if include_country: 
+      return {**self.code_to_pop, **{self.country_code: self.country_pop}}
 
     return self.code_to_pop
 
-  def CountyNames(self,  RO=False): 
 
-    return ["România"]*RO + sorted(list(self.dict_CodeToName().values()))
+  def CountyNames(self,  include_country=False, ASCII=False): 
 
-  def get_Name(self, code=None): 
+    only_counties = sorted(list(self.dict_CodeToName(ASCII=ASCII).values()))
+
+    if not include_country:
+      return only_counties
+
+    add = list(self.dict_CountryCodeToName(ASCII=ASCII).values())
+
+    return add + only_counties
+
+
+  def get_Name(self, code=None, ASCII=False): 
 
     if code is not None: 
-      return self.dict_CodeToName(RO=True)[code]
+      return self.dict_CodeToName(include_country=True, ASCII=ASCII)[code]
 
   def get_Code(self, name=None): 
 
     if name is not None: 
-      return self.dict_NameToCode(RO=True)[name]
+      return self.dict_NameToCode(include_country=True)[name]
 
   def get_Pop(self, code=None, name=None): 
 
-    D = self.dict_CodeToPop(RO=True)
+    D = self.dict_CodeToPop(include_country=True)
 
     if code is not None: 
       return D[code]
@@ -210,15 +281,18 @@ class Counties:
 
     return np.array(list(self.code_to_capcoord.values()))
 
+
   def set_geoColumn(self, column, value, code=None, name=None): 
 
     row = self.get_geoIndex(code=code, name=name)
 
     self.country.loc[row, column] = value
 
+
   def plot(self, **kwargs): 
 
     return self.country.plot(**kwargs)
+
 
   def get_geoColumn(self, column, name=None, code=None, **kwargs): 
 
@@ -228,6 +302,7 @@ class Counties:
     row = self.get_geoIndex(code=code, name=name, **kwargs)
 
     return self.country[row][column]
+
 
   def get_geoCountryBox(self): 
 
@@ -242,6 +317,9 @@ class Counties:
 if __name__ == '__main__': 
   """Test."""
 
-  geo = Counties()
+  print(names_ASCII("RO_data/"))
+
+
+  geo = Counties("RO")
 
   print(geo.get_geoCountryBox())

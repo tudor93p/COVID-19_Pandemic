@@ -3,35 +3,39 @@ import numpy as np
 import python_libraries.PlotPyQt as PlotPyQt
 
 from plot import plot
-from utils import select_country_specific_objects
+from utils import select_country_specific_objects,ASCII
 
 
-def funfig(obj, fig, axes):
-
-  plot(
-    axes, 
-    per_capita=obj.get_checkbox("per"), 
-    county=obj.get_combobox("county"), 
-    day=obj.get_slider("day"), 
-    cases=obj.get_combobox("cases"), 
-    cmap=obj.get_combobox("cmap"), 
-    window=int(obj.get_slider("sg_w")), 
-    prevdays=int(obj.get_slider("prev")), 
-    show_mean=obj.get_checkbox("mean"), 
-    show_new=obj.get_checkbox("new"), 
-    show_CHlim=obj.get_checkbox("CHlim"), 
-    linewidth=obj.get_slider("lw"), 
-    maxcolor=obj.get_slider("maxcolor"), 
-    county_labels=obj.get_checkbox("codes"), 
-    county_capitals=obj.get_checkbox("capitals"), 
-    )
 
 
 def main(country):
   cases, counties = select_country_specific_objects(country)
 
+  def funfig(obj, fig, axes):
+  
+    plot(
+      axes,
+      cases,
+      counties,
+      per_capita=obj.get_checkbox("per"), 
+      county=obj.get_combobox("county"), 
+      day=obj.get_slider("day"), 
+      showcases=obj.get_combobox("cases"), 
+      cmap=obj.get_combobox("cmap"), 
+      window=obj.get_slider("sg_w"), 
+      prevdays=obj.get_slider("prev"), 
+      show_mean=obj.get_checkbox("mean"), 
+      show_new=obj.get_checkbox("new"), 
+      show_CHlim=obj.get_checkbox("CHlim"), 
+      linewidth=obj.get_slider("lw"), 
+      maxcolor=obj.get_slider("maxcolor"), 
+      county_labels=obj.get_checkbox("codes"), 
+      county_capitals=obj.get_checkbox("capitals"), 
+      )
+
   fig = PlotPyQt.Figure(funfig, 1, 2, figsize=(10, 4.6))#, tight=True, **kwargs)
-  fig.add_combobox(counties.CountyNames(RO=True), label="County", key="county", columnSpan=1)#, next_row=False)
+
+  fig.add_combobox(counties.CountyNames(include_country=True,ASCII=ASCII), label="County", key="county", columnSpan=1)#, next_row=False)
 
   #Fig.add_slider(label="Poly order", key="sg_o", vs=range(30))#, columnSpan=1, next_row=True)
 
@@ -58,7 +62,7 @@ def main(country):
   fig.add_slider(label="Saturation", key="maxcolor", vs=np.linspace(1e-4, 1, 41), v0=40, next_row=False, vdiv=False, columnSpan=5)
 
   fig.add_checkbox(label="County labels", key="codes", next_row=False, vdiv=False, columnSpan=1, status=True)
-  fig.add_checkbox(label="County capitals", key="capitals", next_row=False, vdiv=False, columnSpan=1, status=True)
+  fig.add_checkbox(label="County capitals", key="capitals", next_row=False, vdiv=False, columnSpan=1, status=False)
 
   fig.show()
 

@@ -2,14 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import savgol_filter
 
-from Ro_datelazi import RoCases
-from counties import Counties
 
-Cases = RoCases("Ro_data/date_15_august_la_13_00.json")
+from utils import select_country_specific_objects,POP_FACTOR,ASCII
 
-PopFactor = 100000
-country = "Ro_data/"
-Geo = Counties(root=country, PopFactor=PopFactor)
 
 
 def extend_limits(lim, amount=0.04):
@@ -21,9 +16,15 @@ def minmax(A):
   return np.array([np.min(A), np.max(A)])
 
 
-def plot(axes, county="România", day=Cases.get_Day(), cmap="viridis", window=5, polyord=1, prevdays=14,
-         per_capita=False, show_mean=True, show_CHlim=False, show_new=True, cases="Total", linewidth=4, vminmax=None,
-         maxcolor=None, county_labels=True, county_capitals=False):
+def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7, per_capita=False, window=5, polyord=1, show_mean=True, show_CHlim=False, show_new=True,  linewidth=4, county_labels=True, county_capitals=False, cmap="viridis", vminmax=None, maxcolor=None):
+
+    
+  if day is None:
+    day = Cases.get_Day()	# the last day
+  if county is None:
+    county = Geo.get_CountryName(ASCII=ASCII)
+
+
 
   ax1, ax2 = axes
 
@@ -38,7 +39,7 @@ def plot(axes, county="România", day=Cases.get_Day(), cmap="viridis", window=5,
     ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
 
 
-  ax1.set_title("Stats for "+county + (" (@ "+str(PopFactor)+" pop.)")*per_capita)
+  ax1.set_title("Stats for "+county + (" (@ "+str(POP_FACTOR)+" pop.)")*per_capita)
 
 
   countycode = Geo.get_Code(name=county)
@@ -88,7 +89,7 @@ def plot(axes, county="România", day=Cases.get_Day(), cmap="viridis", window=5,
 
 
   if show_CHlim:
-    CH_lim = Geo.get_Pop(code=countycode)*PopFactor/100000*(60/14)*popfactor
+    CH_lim = Geo.get_Pop(code=countycode)*POP_FACTOR/100000*(60/14)*popfactor
 
     ax1_2.plot(ax1_2.get_xlim(), np.repeat(CH_lim, 2), c="r", zorder=0, lw=linewidth/2, label="Criterion CH")
 
@@ -137,17 +138,17 @@ def plot(axes, county="România", day=Cases.get_Day(), cmap="viridis", window=5,
   # ----------------- #
 
 
-  for cc in Geo.get_CodeList(RO=False):
+  for cc in Geo.get_CodeList(include_country=False):
 
-    if cases == "Total":
+    if showcases == "Total":
 
       tot = Cases.Nr_Infected(Day=day, County=cc)
 
-      Geo.set_geoColumn(cases, tot*popfactor, code=cc)
+      Geo.set_geoColumn(showcases, tot*popfactor, code=cc)
 
       label2 = "Total cases"
 
-    elif cases == "New":
+    elif showcases == "New":
 
       label2 = "Daily new" if prevdays==1 else "Mean last "+str(prevdays)+" days"
       if window!=1 and polyord!=0:
@@ -161,7 +162,7 @@ def plot(axes, county="România", day=Cases.get_Day(), cmap="viridis", window=5,
       else:
         new = Cases.Nr_NewInfected(Day=day, TimeFrame=prevdays, County=cc)
 
-      Geo.set_geoColumn(cases, new*popfactor/prevdays, code=cc)
+      Geo.set_geoColumn(showcases, new*popfactor/prevdays, code=cc)
 
     if county_labels:
 
@@ -200,7 +201,7 @@ def plot(axes, county="România", day=Cases.get_Day(), cmap="viridis", window=5,
 
   if vminmax is None:
     vmin = 0
-    vmax = np.max(Geo.get_geoColumn(cases))
+    vmax = np.max(Geo.get_geoColumn(showcases))
 
   else:
     vmin, vmax = vminmax
@@ -208,31 +209,35 @@ def plot(axes, county="România", day=Cases.get_Day(), cmap="viridis", window=5,
   if maxcolor is not None:
     vmax *= maxcolor
 
-  Geo.plot(ax=ax2, column=cases, cmap=cmap, zorder=0, legend=True, legend_kwds={'orientation':"horizontal", "pad":0.05, 'label':" ".join([day+":", label2]+[" (@ "+str(PopFactor)+" pop.)"]*per_capita)}, vmin=vmin, vmax=vmax)
+  Geo.plot(ax=ax2, column=showcases, cmap=cmap, zorder=0, legend=True, legend_kwds={'orientation':"horizontal", "pad":0.05, 'label':" ".join([day+":", label2]+[" (@ "+str(POP_FACTOR)+" pop.)"]*per_capita)}, vmin=vmin, vmax=vmax)
 
-  return np.sort([np.max(Geo.get_geoColumn(cases, code=cc)) for cc in Geo.get_CodeList(RO=False) if cc not in ["B", "SV"]])
-
-
+  return np.sort([np.max(Geo.get_geoColumn(showcases, code=cc)) for cc in Geo.get_CodeList(include_country=False) if cc not in ["B", "SV"]])
 
 
 
-if __name__ == '__main__':
 
-  for (cmap, cases) in zip(["YlGnBu",  "viridis"], ["New", "Total"]):
 
+
+
+
+def main(country):
+
+  cases, counties = select_country_specific_objects(country)
+
+  for (cmap, showcases) in zip(["YlGnBu",  "viridis"], ["New", "Total"]):
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.6))
 
-    P = plot(
-      	axes,
-      	per_capita=True,
-      	day = Cases.get_Day(),
-      	cases = cases,
-      	cmap = cmap,
-      	show_mean = True,
-      	show_new = True,
-      	show_CHlim = True,
-      	)
+    P = plot(	axes,
+		cases,
+		counties,
+	      	per_capita = True,
+	      	showcases = showcases,
+	      	cmap = cmap,
+	      	show_mean = True,
+	      	show_new = True,
+      		show_CHlim = True,
+	      	)		
 
     print(P)
 
@@ -244,4 +249,12 @@ if __name__ == '__main__':
 
   plt.close()
 
+
+
+
+
+if __name__ == '__main__':
+
+  desired_country = 'Romania'
+  main(desired_country)
 

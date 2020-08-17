@@ -1,7 +1,44 @@
 import numpy as np
 import json
+from datetime import datetime
+import urllib.request
+
+latest_fname = "latestData.json"
 
 
+def load_data(fname,root=""):
+
+  with open(root+fname, "r", encoding="latin-1") as f:
+
+    data = json.load(f)
+
+
+  local_date = data["charts"]["dailyStats"]["lastUpdatedOn"]
+ 
+  new_date = datetime.now().strftime("%Y-%m-%d") 
+
+
+  if local_date != new_date and datetime.now().hour > 12:
+
+    url = 'https://di5ds1eotmbx1.cloudfront.net/latestData.json'
+    
+    operUrl = urllib.request.urlopen(url)
+  
+    if(operUrl.getcode()==200):
+       data = json.loads(operUrl.read())
+       
+    else:
+       print("Error receiving data", operUrl.getcode())
+  
+    with open(root+latest_fname,"w") as f:
+      json.dump(data,f)
+
+      print("Local data from",local_date," was updated to",data["charts"]["dailyStats"]["lastUpdatedOn"])
+
+
+
+
+  return data
 
 #===========================================================================#
 #
@@ -11,11 +48,9 @@ import json
 
 class RoCases:
 
-  def __init__(self, fname):
+  def __init__(self,fname = latest_fname, root=""):
 
-    with open(fname, "r", encoding="latin-1") as f:
-
-      data = json.load(f)
+    data = load_data(fname,root)
 
     today = data["charts"]["dailyStats"]["lastUpdatedOn"]
 
@@ -128,7 +163,13 @@ class RoCases:
 
 if __name__ == '__main__':
 
-  test = RoCases("Ro_data/date_15_august_la_13_00.json")
+
+
+  test = RoCases()#"date_15_august_la_13_00.json")
+
+
+
+  print("Today:",test.get_Day())
 
   print("Total today:", test.Nr_Infected())
   print("New today:", test.Nr_NewInfected())

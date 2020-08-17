@@ -1,5 +1,8 @@
 from counties import Counties
-from Ro_datelazi import RoCases
+from RO_data.Ro_datelazi import RoCases
+
+POP_FACTOR = 100000
+ASCII = True
 
 
 def select_country_specific_objects(country):
@@ -9,12 +12,18 @@ def select_country_specific_objects(country):
     ----------
     country: str
     """
-    if country == 'Romania':
-        cases = RoCases("Ro_data/date_15_august_la_13_00.json")
-        pop_factor = 100000
-        country = "Ro_data/"
-        counties = Counties(root=country, PopFactor=pop_factor)
+    if country in ['RO','Romania','România']:
+
+        cases = RoCases(root="RO_data/")
+    
+
+        counties = Counties(
+			"RO",
+			country_nameASCII="Romania",
+			country_name="România",
+			PopFactor = POP_FACTOR)
+
     else:
-        raise NotImplementedError('Country name not recognized or not yet implemented.')
+        raise NotImplementedError("Country name/code '"+country+"' not recognized or not yet implemented.")
 
     return cases, counties
