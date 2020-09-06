@@ -6,24 +6,22 @@ ASCII = True
 
 
 def select_country_specific_objects(country):
-    """Initialize the country specific objects.
+	"""Initialize the country specific objects.
 
-    Parameters
-    ----------
-    country: str
-    """
-    if country in ['RO','Romania','România']:
+	Parameters
+	----------
+	country: str
+	"""
+	if country in ['RO','Romania','România']:
 
-        cases = RoCases(root="RO_data/")
-    
+		cases = RoCases(root="RO_data/")
 
-        counties = Counties(
-			"RO",
-			country_nameASCII="Romania",
-			country_name="România",
-			PopFactor = POP_FACTOR)
+		counties = Counties(
+				"RO",
+				country_nameASCII="Romania",
+				country_name="România",
+				PopFactor=POP_FACTOR)
+	else:
+		raise NotImplementedError("Country name/code '"+country+"' not recognized or not yet implemented.")
 
-    else:
-        raise NotImplementedError("Country name/code '"+country+"' not recognized or not yet implemented.")
-
-    return cases, counties
+	return cases, counties

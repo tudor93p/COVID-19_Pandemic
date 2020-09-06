@@ -18,9 +18,9 @@ def minmax(A):
 
 def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7, per_capita=False, window=5, polyord=1, show_mean=True, show_CHlim=False, show_new=True,  linewidth=4, county_labels=True, county_capitals=False, cmap="viridis", vminmax=None, maxcolor=None):
 
-    
+
   if day is None:
-    day = Cases.get_Day()	# the last day
+    day = Cases.get_day()	# the last day
   if county is None:
     county = Geo.get_CountryName(ASCII=ASCII)
 
@@ -51,7 +51,7 @@ def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7,
 
   ax1_1.set_ylabel("Total cases")
 
-  x11, y11 = Cases.Nr_Infected_AllDays(County=countycode)
+  x11, y11 = Cases.get_number_infected_all_days(County=countycode)
 
   y11 = y11*popfactor
 
@@ -65,14 +65,14 @@ def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7,
 
   ax1_2.set_ylabel("New cases")
 
-  x12, y12 = Cases.Nr_NewInfected_AllDays(County=countycode)
+  x12, y12 = Cases.get_number_new_infected_all_days(County=countycode)
 
   y12 *= popfactor
 
   if show_new:
     ax1_2.vlines(x12, np.zeros_like(y12), y12, linewidth=linewidth/2, label="Daily new", zorder=1, alpha=0.6)
 
-  x14, y14 = Cases.Nr_NewInfected_AllDays(TimeFrame=prevdays, County=countycode)
+  x14, y14 = Cases.get_number_new_infected_all_days(TimeFrame=prevdays, County=countycode)
 
   y14 *= popfactor/prevdays
 
@@ -142,7 +142,7 @@ def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7,
 
     if showcases == "Total":
 
-      tot = Cases.Nr_Infected(Day=day, County=cc)
+      tot = Cases.get_number_infected(Day=day, County=cc)
 
       Geo.set_geoColumn(showcases, tot*popfactor, code=cc)
 
@@ -153,14 +153,14 @@ def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7,
       label2 = "Daily new" if prevdays==1 else "Mean last "+str(prevdays)+" days"
       if window!=1 and polyord!=0:
 
-        y2 = Cases.Nr_NewInfected_AllDays(TimeFrame=prevdays, County=cc)[1]
+        y2 = Cases.get_number_new_infected_all_days(TimeFrame=prevdays, County=cc)[1]
 
         new = savgol_filter(y2, window, polyord)[Cases.get_iDay(day)]
 
         label2 = label2 + " (smooth)"
 
       else:
-        new = Cases.Nr_NewInfected(Day=day, TimeFrame=prevdays, County=cc)
+        new = Cases.get_number_new_infected(Day=day, TimeFrame=prevdays, County=cc)
 
       Geo.set_geoColumn(showcases, new*popfactor/prevdays, code=cc)
 
@@ -237,7 +237,7 @@ def main(country):
 	      	show_mean = True,
 	      	show_new = True,
       		show_CHlim = True,
-	      	)		
+	      	)
 
     print(P)
 

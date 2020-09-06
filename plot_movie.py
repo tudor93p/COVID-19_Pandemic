@@ -17,7 +17,7 @@ end_padding = 14 	# still frames at the end of the movies
 
 def main(country):
 	cases, counties = select_country_specific_objects(country)
-        
+
 	start = 13
 
 
@@ -38,7 +38,7 @@ def main(country):
 		"showcases": "Total",
 		"vminmax": [0, 25],  # vmax = (median + 2*standard dev)
 		},
-		
+
 		{"per_capita": True,
 		"cmap": "viridis",
 		"showcases": "New",
@@ -47,7 +47,7 @@ def main(country):
 		]
 
 	if len(sys.argv) > 1:
-		try:	
+		try:
 			tasks = [tasks[i] for i in map(int, sys.argv[1: ]) if i in range(len(tasks))]
 		except:
 			pass
@@ -70,7 +70,7 @@ def main(country):
 				axes,
 				cases,
 				counties,
-				day=cases.get_Day(i),
+				day=cases.get_day(i),
 				prevdays=7,
 				show_mean=True,
 				show_new=True,
@@ -114,7 +114,7 @@ def main(country):
 
 			cmd = " ".join(["cp",fname_(task,start),fname_(task,start-i)])
 
-			os.system(cmd)                       
+			os.system(cmd)
 
 		for i in range(1,end_padding+1):
 
@@ -124,7 +124,7 @@ def main(country):
 			os.system(cmd)
 
 
-		
+
 
 		cmd = "ffmpeg -y -f image2 -r "+str(framerate)+" -pattern_type glob -i '"+prefix+"_*.png' "+counties.country_code+"_fig/"+task["showcases"]+".mp4 "
 

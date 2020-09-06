@@ -3,7 +3,7 @@ import numpy as np
 import python_libraries.PlotPyQt as PlotPyQt
 
 from plot import plot
-from utils import select_country_specific_objects,ASCII
+from utils import select_country_specific_objects, ASCII
 
 
 
@@ -12,25 +12,25 @@ def main(country):
   cases, counties = select_country_specific_objects(country)
 
   def funfig(obj, fig, axes):
-  
+
     plot(
       axes,
       cases,
       counties,
-      per_capita=obj.get_checkbox("per"), 
-      county=obj.get_combobox("county"), 
-      day=obj.get_slider("day"), 
-      showcases=obj.get_combobox("cases"), 
-      cmap=obj.get_combobox("cmap"), 
-      window=obj.get_slider("sg_w"), 
-      prevdays=obj.get_slider("prev"), 
-      show_mean=obj.get_checkbox("mean"), 
-      show_new=obj.get_checkbox("new"), 
-      show_CHlim=obj.get_checkbox("CHlim"), 
-      linewidth=obj.get_slider("lw"), 
-      maxcolor=obj.get_slider("maxcolor"), 
-      county_labels=obj.get_checkbox("codes"), 
-      county_capitals=obj.get_checkbox("capitals"), 
+      per_capita=obj.get_checkbox("per"),
+      county=obj.get_combobox("county"),
+      day=obj.get_slider("day"),
+      showcases=obj.get_combobox("cases"),
+      cmap=obj.get_combobox("cmap"),
+      window=obj.get_slider("sg_w"),
+      prevdays=obj.get_slider("prev"),
+      show_mean=obj.get_checkbox("mean"),
+      show_new=obj.get_checkbox("new"),
+      show_CHlim=obj.get_checkbox("CHlim"),
+      linewidth=obj.get_slider("lw"),
+      maxcolor=obj.get_slider("maxcolor"),
+      county_labels=obj.get_checkbox("codes"),
+      county_capitals=obj.get_checkbox("capitals"),
       )
 
   fig = PlotPyQt.Figure(funfig, 1, 2, figsize=(10, 4.6))#, tight=True, **kwargs)
