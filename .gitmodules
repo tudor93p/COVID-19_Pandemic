@@ -2,6 +2,6 @@
 	path = python_libraries
 	url = git@github.com:tudor93p/python_libraries.git
 
-[submodule "editorconfig"]
-	path = ./
+[submodule ".editorconfig"]
+	path = .editorconfig
 	url = git@github.com:tudor93p/julia_libraries.git
