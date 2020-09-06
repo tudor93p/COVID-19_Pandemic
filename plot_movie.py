@@ -87,7 +87,7 @@ def main(country):
 
 			plt.close()
 
-			print(task["showcases"], "-- done",i-start+1,"/",cases.get_iDay()-start+1)
+			print(task["showcases"], "-- done", i - start + 1,"/", cases.get_index_day() - start + 1)
 
 #			break
 
@@ -118,7 +118,7 @@ def main(country):
 
 		for i in range(1,end_padding+1):
 
-			cmd = " ".join(["cp",fname_(task,cases.get_iDay()),fname_(task,i+cases.get_iDay())])
+			cmd = " ".join(["cp", fname_(task, cases.get_index_day()), fname_(task, i + cases.get_index_day())])
 
 
 			os.system(cmd)

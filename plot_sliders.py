@@ -53,7 +53,7 @@ def main(country):
 
   fig.add_slider(label="Smoothen", key="sg_w", vs=np.arange(1, 50, 2), next_row=False, columnSpan=5, vdiv=False)
 
-  fig.add_slider(label="Day", key="day", vs=cases.get_Days(), v0=cases.get_iDay(), next_row=True)
+  fig.add_slider(label="Day", key="day", vs=cases.get_days(), v0=cases.get_index_day(), next_row=True)
 
   fig.add_combobox(["Total", "New"], label="Color", key="cases", next_row=True, columnSpan=1, vdiv=False)
 

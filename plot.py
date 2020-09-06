@@ -106,7 +106,7 @@ def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7,
 	# y12 can be negative
   ym12 = min(ym12, 0)
 
-  ax1_2.plot(np.repeat(Cases.get_iDay(day), 2), [ym12, yM12], c="crimson", zorder=0, lw=1.5*linewidth, alpha=0.4)
+  ax1_2.plot(np.repeat(Cases.get_index_day(day), 2), [ym12, yM12], c="crimson", zorder=0, lw=1.5 * linewidth, alpha=0.4)
 
 
 
@@ -142,7 +142,7 @@ def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7,
 
     if showcases == "Total":
 
-      tot = Cases.get_number_infected(Day=day, County=cc)
+      tot = Cases.get_number_infected_total(Day=day, County=cc)
 
       Geo.set_geoColumn(showcases, tot*popfactor, code=cc)
 
@@ -155,7 +155,7 @@ def plot(axes, Cases, Geo, county=None, day=None, showcases="Total", prevdays=7,
 
         y2 = Cases.get_number_new_infected_all_days(TimeFrame=prevdays, County=cc)[1]
 
-        new = savgol_filter(y2, window, polyord)[Cases.get_iDay(day)]
+        new = savgol_filter(y2, window, polyord)[Cases.get_index_day(day)]
 
         label2 = label2 + " (smooth)"
 
