@@ -4,7 +4,9 @@ import numpy as np
 
 from utils import POP_FACTOR,ASCII,quarantine_limit
 
-from plot_utils import extend_limits,minmax,collect_legends
+from plot_utils import extend_limits,minmax,collect_legends,make_title
+from plot_utils import timestamp_to_date
+
 
 
 
@@ -18,6 +20,7 @@ from plot_utils import extend_limits,minmax,collect_legends
 
 def plot(ax1, Cases, Geo, data, day=None, prevdays=7, county=None,
         per_capita=False, window=5, polyord=1, show_mean=True,
+        title=None,
         show_total = True, show_countrylim=None, linewidth=4, **kwargs):
 
 
@@ -37,8 +40,17 @@ def plot(ax1, Cases, Geo, data, day=None, prevdays=7, county=None,
     for ax in [ax1_1, ax1_2]:
         ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
 
-    ax1.set_title(f"Nr. {data} on {day}" 
-                                + (f" (@ {POP_FACTOR} pop.)")*per_capita )
+   
+    title = make_title(
+                "data day popfactor" if title is None else title,
+                popfactor= f"@ {POP_FACTOR} pop." if per_capita else "",
+                data=data,
+                day=timestamp_to_date(day,month="long"),
+                county=county
+                )
+
+    if title is not None:    
+        ax1.set_title(title)
 
     
     
@@ -108,15 +120,13 @@ def plot(ax1, Cases, Geo, data, day=None, prevdays=7, county=None,
 
 
 
-    for kwarg in ["name","code"]:
 
-        county_index = Geo.get_county_index(**{kwarg:county})
+    county_index = Geo.get_county_index(name=county)
 
-        if county_index is not None:
-        
-            ax1_2.plot(np.repeat(county_index, 2), [ym12, yM12], c="crimson", zorder=0, lw=1.5 * linewidth, alpha=0.4)
+    if county_index is not None:
     
-            break 
+        ax1_2.plot(np.repeat(county_index, 2), [ym12, yM12], c="crimson", zorder=0, lw=1.5 * linewidth, alpha=0.4)
+    
     
     
     

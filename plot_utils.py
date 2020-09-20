@@ -69,7 +69,33 @@ def timestamp_to_date(ts,month="short"):
 
 
 
+def make_title(title=[],**kwargs):
 
+    out = []
+    def append(name):
+        if name in kwargs.keys():
+            if kwargs[name] is not None:
+                if len(kwargs[name]) > 0:
+                    out.append(kwargs[name])
+        else:
+            out.append(name)
+
+    if title is None:
+        return None
+
+    if isinstance(title,str):
+        title = title.split(" ")
+
+    for name in title:
+
+        append(name)
+
+    if len(out):
+
+        out[0] = out[0].capitalize()
+        return " ".join(out)
+
+    return None
 
 
 

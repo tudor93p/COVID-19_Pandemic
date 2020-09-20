@@ -1,7 +1,7 @@
 import numpy as np
 import geopandas
 import string
-
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def codes(root):
 	"""List of county codes."""
@@ -338,11 +338,39 @@ class Counties:
     	self.country.loc[row, column] = value
     
     
-    def plot(self, **kwargs):
-    
-    	return self.country.plot(**kwargs)
-    
-    
+    def plot(self, ax, divider_kwargs={},**kwargs):
+        
+    	return self.country.plot(ax=ax,**kwargs)
+   
+    def plot_custom(self, ax, divider_kwargs={}, legend=True, legend_kwds = {}, **kwargs):
+
+        def orientation():
+
+            if "position" not in divider_kwargs.keys():
+                if "orientation" in legend_kwds.keys():
+                    return legend_kwds["orientation"]
+                return "vertical"
+
+            elif divider_kwargs["position"] in ["right","left"]:
+                return "vertical"
+            elif divider_kwargs["position"] in ["top","bottom"]:
+                return "horizontal"
+
+
+        if legend:
+            divider = make_axes_locatable(ax)
+
+            cax = divider.append_axes(**divider_kwargs)
+
+            legend_kwds["orientation"] = orientation()
+
+            return self.country.plot(ax=ax,
+                    legend_kwds=legend_kwds,
+                    cax=cax, legend=legend, **kwargs)
+
+        return self.country.plot(ax=ax,legend=legend, **kwargs) 
+
+
     def get_geoColumn(self, column, name=None, code=None, **kwargs):
     
     	if name is None and code is None:

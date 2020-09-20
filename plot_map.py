@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from utils import POP_FACTOR,ASCII,quarantine_limit
-from plot_utils import timestamp_to_date
+from plot_utils import timestamp_to_date,make_title
 
 #===========================================================================#
 #
@@ -13,27 +13,35 @@ from plot_utils import timestamp_to_date
 def plot(ax2, Cases, Geo, totalnew, data, day=None, prevdays=7,
         per_capita=False, window=5, polyord=1, county_labels=True,
         county_capitals=False, cmap="viridis", vminmax=None,
-        maxcolor=None,show_countrylim=None, show_colorbar=True,
-        title=None,**kw):
+        maxcolor=None,show_countrylim=None, cbarlabel=None, title=None,**kw):
 
 
     if day is None:
         day = Cases.get_day()	# the last day
 
-    showncases = totalnew + " " + data
-
     totalnew, data = totalnew.lower(), data.lower()
 
-    if title is None:
+    showncases = totalnew + " " + data
 
-        print_day = timestamp_to_date(day,month="long")
 
-        title = f"Nr. {showncases.lower()}: "
+    title = make_title(
+                "Nr. showncases in county on day" if title is None else title,
+                totalnew=totalnew,
+                popfactor=(f"@ {POP_FACTOR} pop.")*per_capita,
+                data=data,
+                showncases=showncases,
+                county=Geo.get_Name(ASCII=ASCII),
+                day=timestamp_to_date(day,month="long"),
+                )
 
-        title = title + f"{Geo.get_Name(ASCII=ASCII)}, {print_day}"
+    if title is not None:
+        ax2.set_title(title)
         
 
-    ax2.set_title(title)
+
+
+
+
 
 
 
@@ -117,16 +125,36 @@ def plot(ax2, Cases, Geo, totalnew, data, day=None, prevdays=7,
     if maxcolor is not None:
             vmax *= maxcolor
         
-    cbarlabel = f"{label2} " + (f" (@ {POP_FACTOR} pop.)")*per_capita 
+    cbarlabel = make_title(
+        "label2 popfactor" if cbarlabel is None else cbarlabel,
+        label2=label2,
+        popfactor=(f"@ {POP_FACTOR} pop.")*per_capita,
+        totalnew=totalnew,
+        data=data,
+        showncases=showncases,
+        county=Geo.get_Name(ASCII=ASCII),
+        day=timestamp_to_date(day,month="short")
+                 )
 
-    Geo.plot(ax=ax2, column=showncases, cmap=cmap, zorder=0, 
-            legend=show_colorbar,
-            legend_kwds={'orientation':"horizontal", "pad":0.05,
-                'label':cbarlabel},
-            vmin=vmin, vmax=vmax)
-       
 
-
+#    Geo.plot_custom(ax2,   # only this takes into account 'divider_kwargs'
+    Geo.plot(ax2,
+            divider_kwargs =
+            {
+            "position":     "right",
+            "size":         "4%",
+            "pad":          "1%",
+            },
+            legend_kwds={
+            **({"label":    cbarlabel} if cbarlabel is not None else {}),
+            "pad":          0.08,
+            "fraction":     0.03,
+#            "orientation":  "horizontal",
+            "orientation":  "vertical",
+            },
+            column=showncases, cmap=cmap, zorder=0, vmin=vmin, vmax=vmax,
+            legend=True,
+            )
         
     
 
@@ -173,7 +201,6 @@ def add_sliders(fig,cases,counties):
 
     fig.add_checkbox(label="County capitals", key="capitals", status=False)
 
-    fig.add_checkbox(label="Show color bar", key="colorbar", status=True)
 
 
 def read_sliders(obj):
@@ -200,7 +227,6 @@ def read_sliders(obj):
             
                 "county_capitals" : obj.get_checkbox("capitals"),
 
-                "show_colorbar" : obj.get_checkbox("colorbar"),
             }
     
 
@@ -223,9 +249,9 @@ def main(country):
     for data in ["infected","cured","deceased"]:
 
 
-        fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.5))
+        fig, axes = plt.subplots(1, 1, figsize=(6, 4.5))
 
-        for (ax, cmap, new_total) in zip(axes,["YlGnBu",  "viridis"], ["New", "Total"]):
+        for (ax, cmap, new_total) in zip([axes],["YlGnBu",  "viridis"], ["New", "Total"]):
    
             
             P = plot(   ax,
@@ -236,6 +262,8 @@ def main(country):
                         prevdays=1,
                         per_capita = True,
                         cmap = cmap,
+#                        title = "data",
+#                        cbarlabel = "totalnew day popfactor",
                         )
             
             

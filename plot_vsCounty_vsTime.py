@@ -6,7 +6,8 @@ import matplotlib.ticker as ticker
 
 from utils import POP_FACTOR,ASCII,quarantine_limit
 
-from plot_utils import mgrid_from_1D,extend_limits,timestamp_to_date
+from plot_utils import mgrid_from_1D,extend_limits
+from plot_utils import make_title,timestamp_to_date
 
 
 
@@ -22,27 +23,35 @@ from plot_utils import mgrid_from_1D,extend_limits,timestamp_to_date
 
 def plot(ax1, Cases, Geo, totalnew, data, day=None, county=None, prevdays=7,
         per_capita=False, window=5, polyord=1, show_countrylim=None, 
-        cmap="viridis", vminmax=None, maxcolor=None, show_colorbar=True,**kw):
-
+        title=None, cmap="viridis", vminmax=None, maxcolor=None, 
+        cbarlabel=None, **kw):
 
 
     totalnew,data = totalnew.lower(), data.lower()
     
-#    ax1.set_xlabel("Day")
     ax1.set_ylabel("County")
     
-    showndata = totalnew + " " + data
+    showncases = totalnew + " " + data
 
 
-    ax1.set_title(f"Nr. {showndata}: {Geo.get_CountryName(ASCII=ASCII)}"
-                                + (f", @ {POP_FACTOR} pop.")*per_capita )
+    title = make_title(
+        "Nr. showncases in county popfactor" if title is None else title,
+        totalnew=totalnew,
+        popfactor=(f"@ {POP_FACTOR} pop.")*per_capita,
+        data=data,
+        showncases=showncases,
+        county=Geo.get_Name(ASCII=ASCII),
+        )
+
+    if title is not None:
+        ax1.set_title(title)
     
     
     populations = Geo.get_PopCounties()
     codes = np.array(Geo.get_CodeList(include_country=False))
     
 
-    x,y,Z,lab = Cases.get_numbers_all_days_all_counties_smooth(showndata,window=window,polyord=polyord,time_frame=prevdays)
+    x,y,Z,lab = Cases.get_numbers_all_days_all_counties_smooth(showncases,window=window,polyord=polyord,time_frame=prevdays)
 
 
     if "total" in totalnew:
@@ -95,15 +104,24 @@ def plot(ax1, Cases, Geo, totalnew, data, day=None, county=None, prevdays=7,
     P = ax1.pcolormesh(*mgrid_from_1D(x,y), Z, cmap=cmap, edgecolors='face',
                 vmax=vmax,vmin=vmin,zorder=5)
 
-    if show_colorbar: 
-        sfmt = ticker.ScalarFormatter(useMathText=False) 
-        sfmt.set_powerlimits((0, 0))
+    cbarlabel = make_title(
+                "lab" if cbarlabel is None else cbarlabel,
+                lab=lab,
+                totalnew=totalnew,
+                popfactor=(f"@ {POP_FACTOR} pop.")*per_capita,
+                data=data,
+                showncases=showncases,
+                county=Geo.get_Name(ASCII=ASCII),
+                )
+
+    sfmt = ticker.ScalarFormatter(useMathText=False) 
+    sfmt.set_powerlimits((0, 0))
     
+    cbar = ax1.get_figure().colorbar(P, ax=ax1, boundaries=np.linspace(vmin,
+        vmax,100), ticks=[vmin,vmax], format=sfmt)
     
-        cbar = ax1.get_figure().colorbar(P, ax=ax1, boundaries=np.linspace(vmin,
-            vmax,100), ticks=[vmin,vmax], format=sfmt)
-        
-        cbar.set_label(lab,rotation=90)
+    if cbarlabel is not None:
+        cbar.set_label(cbarlabel,rotation=90)
 
 
 
@@ -175,7 +193,6 @@ def add_sliders(fig,cases,counties):
     fig.add_slider(label="Saturation", key="maxcolor", vs=np.linspace(1e-4, 1,
         71), v0=70, columnSpan=5)
 
-    fig.add_checkbox(label="Show color bar", key="colorbar", status=True)
 
 
 def read_sliders(obj):
@@ -193,8 +210,6 @@ def read_sliders(obj):
                 "window" : obj.get_slider("sg_w"),
 
                 "cmap" : obj.get_combobox("cmap"),
-                
-                "show_colorbar" : obj.get_checkbox("colorbar"),
 
                 "maxcolor" : obj.get_slider("maxcolor"),
             }
@@ -231,6 +246,8 @@ def main(country):
              show_mean = True,
              show_new = True,
 #             show_countrylim="DE",
+#            cbarlabel="data",
+#            title="in county"
              )
         
         

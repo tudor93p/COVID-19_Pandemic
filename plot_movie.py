@@ -53,27 +53,31 @@ def main(country):
                             "vminmax" : [0, vM],
                             "show_colorbar":True}),
 
-            ] for (cmap,tn,vM) in [("viridis","new",10),("cool","total",800)]
+            ] for (cmap,tn,vM) in []#("viridis","new",10),("cool","total",800)]
 
             ]+[
             [ { "data": "infected", 
                 "per_capita": True, "prevdays": 14,
                 "window":5},
   
-                [8,5.7],        # figsize
+                [8.5,5.7],        # figsize
 
                 (224,plot_map,{"cmap" : "plasma", "totalnew": "new",
                             "vminmax" : [0, 10],
-                            "show_colorbar":False,
-                            "title" : "New"}),
+                            "title" : "totalnew",
+                            "cbarlabel": "",
+                            }),
 
-                (211,plot_newtotal_vsTime,{"linewidth":3.7}),
+                (211,plot_newtotal_vsTime,
+                    {"linewidth":3.7,
+                        "title": "Nr. data in county popfactor \n day"
+                    }),
 
 
                 (223,plot_map,{"cmap" : "plasma", "totalnew": "total",
                             "vminmax" : [0, 800],
-                            "show_colorbar":False,
-                            "title" : "Total"}),
+                            "cbarlabel": "",
+                            "title" : "totalnew"}),
 
 
 

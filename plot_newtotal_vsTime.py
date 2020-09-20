@@ -4,7 +4,8 @@ import numpy as np
 
 from utils import POP_FACTOR,ASCII,quarantine_limit
 
-from plot_utils import extend_limits,minmax,collect_legends,timestamp_to_date
+from plot_utils import extend_limits,minmax,collect_legends
+from plot_utils import make_title,timestamp_to_date
 
 
 
@@ -17,7 +18,8 @@ from plot_utils import extend_limits,minmax,collect_legends,timestamp_to_date
 
 
 def plot(ax1, Cases, Geo, data, day=None, county=None, prevdays=7,
-        per_capita=False, window=5, polyord=1, show_mean=True, show_total=True, 
+        per_capita=False, window=5, polyord=1, show_mean=True, 
+        show_total=True, title=None,
         show_countrylim=None, show_new=True, linewidth=4, **kwargs):
 
 
@@ -36,9 +38,18 @@ def plot(ax1, Cases, Geo, data, day=None, county=None, prevdays=7,
     for ax in [ax1_1, ax1_2]:
         ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
     
-    
-    ax1.set_title(f"Nr. {data}: {county}"
-                                + (f", @ {POP_FACTOR} pop.")*per_capita )
+   
+    title = make_title(
+                "Nr. data in county popfactor" if title is None else title,
+                popfactor=(f"@ {POP_FACTOR} pop.")*per_capita,
+                data=data,
+                county=county,
+                day=None if day is None else timestamp_to_date(day,month="long"),
+                )
+
+    if title is not None:
+        ax1.set_title(title)
+
 
     
     countycode = Geo.get_Code(name=county)
@@ -223,6 +234,7 @@ def main(country):
              show_mean = True,
              show_new = True,
              show_countrylim="DE",
+#             title="",
              )
         
         
