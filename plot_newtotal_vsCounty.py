@@ -38,7 +38,8 @@ def plot(ax1, Cases, Geo, data, day=None, prevdays=7, county=None,
     
     
     for ax in [ax1_1, ax1_2]:
-        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,
+            np.log10(999)))
 
    
     title = make_title(

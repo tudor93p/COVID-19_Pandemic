@@ -36,7 +36,8 @@ def plot(ax1, Cases, Geo, data, day=None, county=None, prevdays=7,
     
     
     for ax in [ax1_1, ax1_2]:
-        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,
+            np.log10(999)))
     
    
     title = make_title(
@@ -68,7 +69,7 @@ def plot(ax1, Cases, Geo, data, day=None, county=None, prevdays=7,
     y11 = y11*popfactor
     
     if show_total:
-        ax1_1.plot(x11, y11, label="Total", c='darkorange', lw=linewidth*1.1)
+        ax1_1.plot(x11, y11, label=f"Total {data}", c='darkorange', lw=linewidth*1.1)
     
     
     
@@ -83,7 +84,7 @@ def plot(ax1, Cases, Geo, data, day=None, county=None, prevdays=7,
     
     if show_new:
         ax1_2.vlines(x12, np.zeros_like(y12), y12, linewidth=linewidth/2,
-              label="Daily new", zorder=1, alpha=0.6)
+              label=f"Daily new {data}", zorder=1, alpha=0.6)
     
     
     if show_mean:
@@ -101,8 +102,23 @@ def plot(ax1, Cases, Geo, data, day=None, county=None, prevdays=7,
 
     
         ax1_2.plot(x14, y14, label=label14, c='navy', alpha=0.85, lw=linewidth, zorder=5)
-   
 
+        if data!="deceased":
+        
+            x15, y15, label15 = Cases.get_numbers_all_days_smooth(f"newdeceased",window=window,polyord=polyord,time_frame=prevdays, county=countycode)
+
+   
+            if np.sum(np.abs(y15))>0:
+
+                y15 = y15 * popfactor/prevdays 
+
+#                factor= int(min(y14/(y15+1e-20)))
+                factor=10
+
+                ax1_2.plot(x15, y15*factor, 
+                        label=f"Deceased $\\times$ {factor}",
+                        c='darkred', alpha=0.7, lw=linewidth*3/4, zorder=4)
+     
 
     lim = quarantine_limit(show_countrylim,data,per_capita,Geo.get_Pop(code=countycode))
    
@@ -230,6 +246,7 @@ def main(country):
              cases,
              counties,
              data,
+#             county="Suceava",
              per_capita = True,
              show_mean = True,
              show_new = True,
