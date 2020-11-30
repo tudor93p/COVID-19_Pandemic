@@ -44,7 +44,8 @@ def mgrid_from_1D(x,y,extend=False):
 
 
 def timestamp_to_date(ts,month="short"):
-    d = pd.Timestamp(ts).date()
+
+    d = pd.Timestamp(str(ts)).date()
 
     # silly way -- the implicit functions seem to output German months
     #               and I didn't manage to locale.setlocale(LC_TIME ...)

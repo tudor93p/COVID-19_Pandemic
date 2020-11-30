@@ -30,25 +30,32 @@ def load_data(fname, root=""):
     
     local_date = data["charts"]["dailyStats"]["lastUpdatedOn"]
     
-    new_date = datetime.now().strftime("%Y-%m-%d")
+    days = (datetime.now() - datetime.strptime(local_date,"%Y-%m-%d")).days
+
+    if days<=0:
+        return data
+
+    if days==1 and datetime.now().hour <= 12:
+        return data 
+
+
+    url = "https://d35p9e4fm9h3wo.cloudfront.net/latestData.json"
+#URL from  https://github.com/code4romania/covid-19-date-la-zi/blob/develop/src/config/globals.jsx 
+
+    open_url = urllib.request.urlopen(url)
     
-    if local_date != new_date and datetime.now().hour > 12:
+    if open_url.getcode() == 200:
+        data = json.loads(open_url.read())
     
-        url = 'https://di5ds1eotmbx1.cloudfront.net/latestData.json'
+    else:
+        print("Error receiving data", open_url.getcode())
     
-        open_url = urllib.request.urlopen(url)
+    with open(root+latest_fname, "w") as f:
+        json.dump(data, f)
     
-        if open_url.getcode() == 200:
-            data = json.loads(open_url.read())
+        print(f"Local data from {local_date} was updated to {data['charts']['dailyStats']['lastUpdatedOn']}")
     
-        else:
-            print("Error receiving data", open_url.getcode())
-    
-        with open(root+latest_fname, "w") as f:
-            json.dump(data, f)
-    
-            print(f"Local data from {local_date} was updated to {data['charts']['dailyStats']['lastUpdatedOn']}")
-    
+
     return data
 
 

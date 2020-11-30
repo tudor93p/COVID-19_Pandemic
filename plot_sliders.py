@@ -15,6 +15,11 @@ nrows,ncols = 2,2
 subplots = [plot_vsCounty_vsTime,plot_newtotal_vsTime]
 nrows,ncols=1,2
 
+subplots = [plot_newtotal_vsTime, plot_map]
+nrows,ncols=1,2
+
+
+
 def main(country):
     cases, counties = select_country_specific_objects(country)
     
@@ -45,7 +50,6 @@ def main(country):
 
 
     fig = PlotPyQt.Figure(funfig, nrows,ncols, figsize=(5*ncols, 4.5*nrows),
-#            remember_config=True
                 )#, tight=True, **kwargs)
     
     for subplot in subplots:
